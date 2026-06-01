@@ -1,0 +1,6 @@
+# Compiled BPF objects — build artifacts, regenerate with `make`.
+*.o
+*.o.tmp
+
+# Generated from the running kernel's BTF by `make`; large and host-specific.
+/include/vmlinux.h
