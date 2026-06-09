@@ -173,6 +173,14 @@ The same shape fits any class: alert on an `EVT_EXEC` whose `cstr(e.cmdline)` ma
 >
 > The yeet daemon, which handles the privileged BPF load. `curl -fsSL https://yeet.cx | sh` installs it.
 
+## Honest caveats
+
+> [!NOTE]
+> claudefeed is observability, not enforcement. It tells you what happened; it does not stop anything from happening.
+
+- claudefeed is an audit log. It reports what a session did; it does not block or sandbox anything. (to block actions, [contact us](https://yeet.cx/?utm_source=github&utm_medium=readme&utm_campaign=claudefeed&utm_content=caveats-block))
+- It records that a file was opened, not what was read or written. `open` events come from `openat` only; the older `open` syscall and memory-mapped or other I/O paths are not shown. ([contact us](https://yeet.cx/?utm_source=github&utm_medium=readme&utm_campaign=claudefeed&utm_content=caveats-open) for custom yeet scripts)
+
 ## Community questions
 
 **Why not just read Claude's own logs?**
@@ -186,6 +194,9 @@ Yes. A fresh session is caught the moment it exec's a program whose basename mat
 
 **Does it only work for Claude?**
 No. `--match` is just a program-name needle. `--match=node`, `--match=python`, `--match=bash` — anything that exec's under a recognizable name works the same way.
+
+**Can I export the data stream?**
+Not built in today. The feed renders to stdout (or plain text when piped), so the quick path is to run claudefeed with whatever `--only=`/`--except=` filter you want and tee the output into a log file or your shipper of choice. For a structured export, say JSON over HTTP, a Kafka topic, an S3 sink, or a SIEM pipeline, the `ring.subscribe` callback in `main.js` is where you'd add it; the same shape as the Slack alerting example above works for any sink. To set up a managed export pipeline, [contact us](https://yeet.cx/?utm_source=github&utm_medium=readme&utm_campaign=claudefeed&utm_content=faq-export).
 
 ## Building from source
 
