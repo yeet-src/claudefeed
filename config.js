@@ -16,12 +16,12 @@ export const MATCH = String(args.match ?? args.m ?? "claude").toLowerCase();
 export const SECS = Number(args.secs ?? args.s ?? 0); /* 0 = run until Ctrl-C */
 
 /* Event-class filters. Default shows everything; pass e.g. `only=exec,conn`
- * to narrow the feed, or `no=open` to drop the noisiest class. */
+ * to narrow the feed, or `except=open` to drop the noisiest class. */
 const ALL = ["exec", "exit", "open", "conn", "listen"];
 const csv = (v) => String(v).split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
 const only = args.only ? csv(args.only) : null;
-const no = args.no ? csv(args.no) : [];
-export const SHOW = new Set(ALL.filter((k) => (only ? only.includes(k) : true) && !no.includes(k)));
+const except = args.except ? csv(args.except) : [];
+export const SHOW = new Set(ALL.filter((k) => (only ? only.includes(k) : true) && !except.includes(k)));
 
 /* Event kinds emitted by claudefeed.bpf.c on the `events` ring buffer. */
 export const EVT_EXEC = 0;
