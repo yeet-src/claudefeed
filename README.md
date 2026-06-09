@@ -1,6 +1,6 @@
 # `claudefeed`
 
-> **`tail -f` for Claude Code.** Every command a session runs, every file it opens, every TCP port it reaches or binds — decoded and streamed live to your terminal, for that session and everything beneath it, and nothing else.
+> **`tail -f` for Claude Code.** Every command a session runs, every file it opens, every TCP port it reaches or binds — decoded and streamed live to your terminal. Scoped to that session's process subtree. No other PIDs, no noise.
 
 <p align="center">
   <img src="https://img.shields.io/badge/platform-Linux-1793D1" alt="Linux">
