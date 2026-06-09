@@ -186,3 +186,16 @@ in hand — you only add the predicate and the `yeet.alert`.
   `char[]` field arrives as a JS string and an `__u8[N]` field (the raw
   address) as a byte object, so argv is space-joined kernel-side into one
   `char[]` while addresses stay binary-clean.
+
+## Honest caveats
+
+> [!NOTE]
+> claudefeed is observability, not enforcement. It tells you what happened; it does not stop anything from happening.
+
+- claudefeed is an audit log. It reports what a session did; it does not block or sandbox anything. (to block actions, [contact us](https://yeet.cx/?utm_source=github&utm_medium=readme&utm_campaign=claudefeed&utm_content=caveats-block))
+- It records that a file was opened, not what was read or written. `open` events come from `openat` only; the older `open` syscall and memory-mapped or other I/O paths are not shown. ([contact us](https://yeet.cx/?utm_source=github&utm_medium=readme&utm_campaign=claudefeed&utm_content=caveats-open) for custom yeet scripts)
+
+## Community questions
+
+**Can I export the data stream?**
+Not built in today. The feed renders to stdout (or plain text when piped), so the quick path is to run claudefeed with whatever `only=`/`no=` filter you want and tee the output into a log file or your shipper of choice. For a structured export, say JSON over HTTP, a Kafka topic, an S3 sink, or a SIEM pipeline, the `ring.subscribe` callback in `main.js` is where you'd add it; the same shape as the Slack alerting example above works for any sink. To set up a managed export pipeline, [contact us](https://yeet.cx/?utm_source=github&utm_medium=readme&utm_campaign=claudefeed&utm_content=faq-export).
