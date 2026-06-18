@@ -163,14 +163,23 @@ static __always_inline int name_matches(const char *path)
     if (nl == 0 || nl > NEEDLE_LEN)
         return 0;
 
+    /* Constant trip count with no data-dependent break, so clang unrolls to
+     * NEEDLE_LEN straight-line iterations and every needle[]/base[] index is
+     * a compile-time constant — provably in bounds. needle_len lives in .data
+     * and is unbounded to the verifier, so a `j >= nl` break would let the
+     * verifier run j past NEEDLE_LEN into an out-of-bounds needle[] read (its
+     * mask gets dropped as "redundant"). Gating each compare with `j < nl`
+     * keeps the early-mismatch semantics without a variable loop bound. */
+    int matched = 1;
+#pragma unroll
     for (int j = 0; j < NEEDLE_LEN; j++) {
-        if ((__u32)j >= nl)
-            break;
-        char want = needle[j & (NEEDLE_LEN - 1)];
-        if (to_lower(base[(start + j) & (BASE_LEN - 1)]) != want)
-            return 0;
+        if ((__u32)j < nl) {
+            char want = needle[j & (NEEDLE_LEN - 1)];
+            if (to_lower(base[(start + j) & (BASE_LEN - 1)]) != want)
+                matched = 0;
+        }
     }
-    return 1;
+    return matched;
 }
 
 /* Walk argv, copying each argument into e->cmdline and turning the NUL
@@ -191,7 +200,18 @@ static __always_inline void read_cmdline(struct event *e, const char *const *arg
             break;
         if (sz > ARGS_CEIL)
             break;
-        long ret = bpf_probe_read_user_str(&e->cmdline[sz], ARGSIZE, argp);
+        /* Clamp the write offset to ARGS_CEIL so [off, off + ARGSIZE) is
+         * provably inside cmdline[CMDLINE_LEN]. The `sz > ARGS_CEIL` break
+         * already guarantees this, but on stricter kernels that bound is
+         * lost across the unrolled accumulation and the ARGSIZE write is
+         * flagged out of bounds. barrier_var() hides sz's value from the
+         * optimizer so it can't fold the clamp away as redundant, leaving
+         * the verifier a register it can bound. */
+        unsigned int off = sz;
+        barrier_var(off);
+        if (off > ARGS_CEIL)
+            off = ARGS_CEIL;
+        long ret = bpf_probe_read_user_str(&e->cmdline[off], ARGSIZE, argp);
         if (ret <= 0)
             break;
         sz += (unsigned int)ret;
