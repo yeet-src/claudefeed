@@ -1,3 +1,5 @@
+<!-- yeet:user-friendly-title: Inspect all agent actions -->
+
 # `claudefeed`
 
 > **`tail -f` for Claude Code.** Every command a session runs, every file it opens, every TCP port it reaches or binds — decoded and streamed live to your terminal. Scoped to that session's process subtree. No other PIDs, no noise.
